@@ -1,18 +1,18 @@
 #pragma once 
 
+#include "BasicObject.hpp"
 #include "StarEngine.hpp"
 #include "StarApplication.hpp"
 #include "ConfigFile.hpp"
 #include "Time.hpp"
-#include "Camera.hpp"
 #include "Interactivity.hpp"
 #include "DebugHelpers.hpp"
 #include "ShaderManager.hpp"
 #include "TextureManager.hpp"
 #include "LightManager.hpp"
-#include "SceneBuilder.hpp"
 #include "KeyStates.hpp"
 #include "Key.hpp"
+#include "BasicObject.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -28,11 +28,13 @@ class Application :
     public star::StarApplication
 {
 public:
-    Application();
+    Application(star::StarScene& scene);
 
     void Load();
 
     void Update();
+
+    virtual std::string getApplicationName() { return "Starlight Application"; }
 
     void onKeyPress(int key, int scancode, int mods) override;
 
@@ -42,7 +44,7 @@ private:
     const int sunSpeed = 50;
     const float spotSpeed = 2;
     double scaleAmt = 0.1;
-    star::GameObject* rock = nullptr;
+
     star::Light* sun = nullptr;
     star::Light* spot = nullptr;
 
