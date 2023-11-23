@@ -14,9 +14,9 @@ Application::Application(star::StarScene& scene) : StarApplication(scene)
     auto camPosition = this->camera.getPosition();
     this->camera.setLookDirection(-camPosition);
 
-    auto mediaDirectoryPath = StarEngine::GetSetting(star::Config_Settings::mediadirectory);
+    auto mediaDirectoryPath = star::ConfigFile::getSetting(star::Config_Settings::mediadirectory);
     {
-        auto lionPath = StarEngine::GetSetting(star::Config_Settings::mediadirectory) + "models/lion-statue/source/rapid.obj";
+        auto lionPath = star::ConfigFile::getSetting(star::Config_Settings::mediadirectory) + "models/lion-statue/source/rapid.obj";
         auto materialsPath = mediaDirectoryPath + "models/lion-statue/source";
         
         auto lion = BasicObject::New(lionPath);
