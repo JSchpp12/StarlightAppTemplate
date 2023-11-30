@@ -23,7 +23,6 @@
 #include <string> 
 #include <memory> 
 
-
 class Application :
     public star::StarApplication
 {
@@ -41,20 +40,6 @@ public:
 protected:
 
 private:
-    const int sunSpeed = 50;
-    const float spotSpeed = 2;
-    double scaleAmt = 0.1;
-
-    star::Light* sun = nullptr;
-    star::Light* spot = nullptr;
-
-
-    static int disabledLightCounter;
-    static bool upCounter;
-    static bool rotatingCounterClock;
-    static std::chrono::steady_clock::time_point timeSinceLastUpdate;
-
-    // Inherited via StarApplication
     void onKeyRelease(int key, int scancode, int mods) override;
     void onMouseMovement(double xpos, double ypos) override;
     void onMouseButtonAction(int button, int action, int mods) override;
