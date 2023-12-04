@@ -58,7 +58,6 @@ layout(binding = 0, set = 0) uniform GlobalUniformBufferObject {
  };
 
 layout(binding = 0, set = 2) uniform sampler2D textureSampler; 
-layout(binding = 1, set = 2) uniform sampler2D normalMapSampler; 
 
 //TODO: move struct init to a different place - not good idea to do this for every fragment
 RenderSettings createSettingsStruct(){
@@ -100,14 +99,6 @@ void main() {
 	vec3 specularLight = vec3(0.0);															//container for summation of light contributions to specular lighting result
 	vec3 surfaceNormal = normalize(inFragNormalWorld);										//using same normal for all frags on surface -- rather than calculating for each one
 
-	//Bump Mapping Calculations
-	//check if the sampled normal is 0, as this means that no bump map was supplied...skip calculations if so
-	vec3 sampledNormal = texture(normalMapSampler, inFragTextureCoordinate).rgb; 
-	if (((globalUbo.renderSettings & settingsChecker.bumpMapping) != 0) && sampledNormal.r != 0 && sampledNormal.g != 0 && sampledNormal.b != 0){
-		sampledNormal = sampledNormal * 2.0 - 1.0; 
-		surfaceNormal = normalize(inTBNMat * sampledNormal); 
-	}
-
 	vec3 cameraPosWorld = globalUbo.inverseView[3].xyz; 
 	vec3 viewDirection = normalize(cameraPosWorld - inFragPositionWorld); 
 
@@ -118,8 +109,6 @@ void main() {
 		outColor = vec4(inFragMatDiffuse, 1.0); 
 	}else if ((globalUbo.renderSettings & settingsChecker.drawMatSpecular) != 0){
 		outColor = vec4(inFragMatSpecular, 1.0); 
-	}else if ((globalUbo.renderSettings & settingsChecker.drawMapBump) != 0){
-		outColor = vec4(vec3(texture(normalMapSampler, inFragTextureCoordinate)), 1.0);
 	}else{
 		for (int i = 0; i < globalUbo.numLights; i++){
 			//check if the current light object is a spotlight
