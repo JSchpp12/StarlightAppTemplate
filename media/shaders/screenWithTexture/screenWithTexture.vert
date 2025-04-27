@@ -10,7 +10,7 @@ layout(location = 5) in vec3 inBiTangent;
 layout(location = 6) in vec3 inMatAmbient; 
 layout(location = 7) in vec3 inMatDiffuse; 
 layout(location = 8) in vec3 inMatSpecular; 
-layout(location = 9) in float inMatShininess; 
+layout(location = 9) in float inMatShininess;  
 
 layout(binding = 0, set = 0) uniform GlobalUniformBufferObject {
 	mat4 proj;
@@ -27,12 +27,9 @@ layout(binding = 1, set = 1) uniform instanceNormalMatrix{
 	mat4 normalMatrix[1024];
 }; 
 
-layout(location = 0) out vec3 normal; 
+layout(location = 0) out vec2 outFragTextureCoordinate; 
 
-void main(){
-    vec4 positionWorld = modelMatrix[gl_InstanceIndex] * vec4(inPosition, 1.0); 
-
-    gl_Position = globalUbo.view * positionWorld;
-    mat4 normalWorld = mat4(transpose(inverse(globalUbo.view * modelMatrix[gl_InstanceIndex]))); 
-    normal = normalize(vec3(vec4(normalWorld * vec4(inNormal, 1.0)))); 
+void main() {
+	gl_Position = vec4(inPosition, 1.0);
+	outFragTextureCoordinate = inTexCoord; 
 }

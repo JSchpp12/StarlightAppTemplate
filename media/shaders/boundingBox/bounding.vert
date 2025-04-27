@@ -23,16 +23,10 @@ layout(binding = 0, set = 1) uniform instanceModelMatrix{
 	mat4 modelMatrix[1024]; 
 };
 
-layout(binding = 1, set = 1) uniform instanceNormalMatrix{
-	mat4 normalMatrix[1024];
-}; 
-
-layout(location = 0) out vec3 normal; 
-
-void main(){
-    vec4 positionWorld = modelMatrix[gl_InstanceIndex] * vec4(inPosition, 1.0); 
-
-    gl_Position = globalUbo.view * positionWorld;
-    mat4 normalWorld = mat4(transpose(inverse(globalUbo.view * modelMatrix[gl_InstanceIndex]))); 
-    normal = normalize(vec3(vec4(normalWorld * vec4(inNormal, 1.0)))); 
+void main() {
+	vec3 translation = vec3(modelMatrix[gl_InstanceIndex][3]);
+	// vec3 scale = vec3(length(modelMatrix[gl_InstanceIndex][0].xyz), length(modelMatrix[gl_InstanceIndex][1].xyz), length(modelMatrix[gl_InstanceIndex][2].xyz));
+	float scale = length(modelMatrix[gl_InstanceIndex][0].xyz);
+	vec3 position = inPosition * scale + translation;
+    gl_Position = globalUbo.proj * globalUbo.view * vec4(position, 1.0); 
 }
