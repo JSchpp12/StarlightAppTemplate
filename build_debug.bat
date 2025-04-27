@@ -11,4 +11,4 @@ cd "%wpath%/build"
 
 cmake -DCMAKE_TOOLCHAIN_FILE="%wpath%/extern/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Debug ..
 
-cmake --build .
+cmake --build . -j 6
