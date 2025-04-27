@@ -1,14 +1,26 @@
 #include "Application.hpp"
 
+#include "ConfigFile.hpp"
+#include "Time.hpp"
+#include "Interactivity.hpp"
+#include "DebugHelpers.hpp"
+#include "LightManager.hpp"
+#include "KeyStates.hpp"
+#include "BasicObject.hpp"
+
+#include <memory> 
+
 using namespace star; 
 
 Application::Application(star::StarScene& scene) : StarApplication(scene){}
 
 void Application::Load()
 {
-    this->camera.setPosition(glm::vec3{ -2.0, 1.0f, -2.0f });
-    auto camPosition = this->camera.getPosition();
-    this->camera.setLookDirection(-camPosition);
+    {
+        const auto position = glm::vec3{ -2.0, 1.0f, -2.0f };
+        this->scene.getCamera()->setPosition(position);
+        this->scene.getCamera()->setForwardVector(glm::normalize(-position));
+    }
 
     auto mediaDirectoryPath = star::ConfigFile::getSetting(star::Config_Settings::mediadirectory);
     auto lionPath = star::ConfigFile::getSetting(star::Config_Settings::mediadirectory) + "models/lion-statue/source/rapid.obj";
@@ -33,9 +45,6 @@ void Application::Load()
     
 }
 
-void Application::Update()
-{
-}
 
 void Application::onKeyPress(int key, int scancode, int mods)
 {
@@ -57,6 +66,6 @@ void Application::onScroll(double xoffset, double yoffset)
 {
 }
 
-void Application::onWorldUpdate()
+void Application::onWorldUpdate(const uint32_t& frameInFlightIndex)
 {
 }

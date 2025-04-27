@@ -1,0 +1,14 @@
+{
+    "dependencies": [
+        "nlohmann-json",
+        "stb",
+        "glm",
+        "glfw3",
+        "vulkan-memory-allocator",
+        "glslang",
+        "tinyobjloader",
+        "boost-thread",
+        "boost-lockfree",
+        "boost-container"
+    ]
+}

@@ -1,9 +1,11 @@
 from ctypes.wintypes import LARGE_INTEGER
 from multiprocessing.dummy import current_process
+import json
 import os
 import sys 
 import string
 import shutil
+import filecmp
 
 inBuildDir = None
 inMediaDir = None
@@ -36,6 +38,8 @@ def CopyFile(sourceDir : string, destinationDir : string):
         os.makedirs(destinationDir)
     finalDestination = os.path.join(destinationDir, fileName)
     shutil.copy2(sourceDir, finalDestination)
+    if (os.path.isfile(finalDestination) and not filecmp.cmp(sourceDir, finalDestination)) or (os.path.isfile(finalDestination)):
+        shutil.copy2(sourceDir, finalDestination)
 
 #copy media as needed 
 def SearchForFiles(currentSourcePath : string, currentDestPath : string):
@@ -53,9 +57,17 @@ def SearchForFiles(currentSourcePath : string, currentDestPath : string):
 
 SearchForFiles(inMediaDir, destinationMediaDir)
 
-#update config file
-lines = []
-print(f'Config file: {inConfigFilePath}')
-newConfigContents = []
-with open(destinationConfigFile, 'w+') as f:
-    f.write('mediadirectory=./media/')
+#write config file
+if not os.path.isfile(destinationConfigFile):
+    with open(destinationConfigFile, 'w', encoding='utf-8') as f:
+        json.dump({
+            'app_name': 'Default Starlight App',
+            'media_directory': './media/',
+            'texture_filtering': 'linear',
+            'texture_anisotropy': 'max' ,
+            'frames_in_flight': '2', 
+            'required_device_feature_geometry_shader' : 'false',
+            'required_device_feature_shader_float64': 'true',
+            'resolution_x' : '1280', 
+            'resolution_y' : '720'
+        }, f)
