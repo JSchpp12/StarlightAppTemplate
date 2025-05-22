@@ -9,6 +9,7 @@
         "tinyobjloader",
         "boost-thread",
         "boost-lockfree",
-        "boost-container"
+        "boost-container",
+        "boost-filesystem"
     ]
 }

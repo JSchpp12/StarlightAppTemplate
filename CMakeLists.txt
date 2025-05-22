@@ -37,6 +37,18 @@ PRIVATE
 	starlight
 )
 
+target_link_libraries(${PROJECT_NAME}
+	PRIVATE 
+		starlight
+		nlohmann_json::nlohmann_json
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES 
+	CXX_STANDARD 20
+	CXX_STANDARD_REQUIRED ON
+)
+
+
 find_program(CPPCHECK_EXECUTABLE cppcheck)
 if (CPPCHECK_EXECUTABLE)
 	set(CPPCHECK_FILES "")
@@ -66,10 +78,11 @@ if (CPPCHECK_EXECUTABLE)
 endif()
 
 #TODO: NEED BETTER SOLUTION FOR MEDIA FILES
-set(PREP_MEDIA_CMD "${CMAKE_CURRENT_SOURCE_DIR}/PrepareMedia.py")
+set(STARLIGHT_APP_BUILDER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern/StarlightAppBuilder/")
+set(PREP_MEDIA_CMD "${STARLIGHT_APP_BUILDER_DIR}/scripts/PrepareMedia.py")
 add_custom_target(
 	always_run_target ALL 
-	DEPENDS ${${PROJECT_NAME}_SOURCE}
+	DEPENDS ${${PROJECT_NAME}_SOURCES}
 )
 
 set(FINAL_APPLICATION_DIR "")
@@ -79,10 +92,37 @@ else()
 	set(FINAL_APPLICATION_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	add_custom_command(
+		TARGET
+			always_run_target
+		POST_BUILD
+		COMMAND 
+			${Python3_EXECUTABLE} ${PREP_MEDIA_CMD} --builddir=${FINAL_APPLICATION_DIR} --mediadir=${CMAKE_CURRENT_SOURCE_DIR}/media --depsdir=${STARLIGHT_APP_BUILDER_DIR}/deps --fastest
+	)
+else()
+	add_custom_command(
+		TARGET
+			always_run_target
+		POST_BUILD
+		COMMAND 
+			${Python3_EXECUTABLE} ${PREP_MEDIA_CMD} --builddir=${FINAL_APPLICATION_DIR} --mediadir=${CMAKE_CURRENT_SOURCE_DIR}/media --depsdir=${STARLIGHT_APP_BUILDER_DIR}/deps
+	)
+endif()
+
+set(FORMAT_STAMP "${CMAKE_BINARY_DIR}/format.stamp")
+set(ALL_FILES ${${PROJECT_NAME}_HEADERS} ${${PROJECT_NAME}_SOURCES})
+# Convert to space-separated string
+string(REPLACE ";" " " FILE_LIST "${ALL_FILES}")
+
 add_custom_command(
-	TARGET
-		always_run_target
-	POST_BUILD
-	COMMAND 
-		python ${PREP_MEDIA_CMD} buildDir=${FINAL_APPLICATION_DIR} mediaDir=${CMAKE_CURRENT_SOURCE_DIR}/media configFile=${CMAKE_CURRENT_SOURCE_DIR}/StarEngine.cfg
+    OUTPUT ${CMAKE_BINARY_DIR}/format.stamp
+    COMMAND ${Python3_EXECUTABLE} ${STARLIGHT_APP_BUILDER_DIR}/scripts/SourceCodeFormatter.py ${FILE_LIST} --dir ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/format.stamp
+    DEPENDS ${ALL_FILES} ${STARLIGHT_APP_BUILDER_DIR}/scripts/SourceCodeFormatter.py
+    COMMENT "Running clang-format"
+)
+
+add_custom_target(format_cpp_files
+    DEPENDS ${FORMAT_STAMP}
 )
