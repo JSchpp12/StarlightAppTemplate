@@ -40,14 +40,12 @@ PRIVATE
 target_link_libraries(${PROJECT_NAME}
 	PRIVATE 
 		starlight
-		nlohmann_json::nlohmann_json
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES 
 	CXX_STANDARD 20
 	CXX_STANDARD_REQUIRED ON
 )
-
 
 find_program(CPPCHECK_EXECUTABLE cppcheck)
 if (CPPCHECK_EXECUTABLE)
@@ -77,13 +75,9 @@ if (CPPCHECK_EXECUTABLE)
 	add_dependencies("${PROJECT_NAME}_cppcheck" ${CMAKE_PROJECT_NAME})
 endif()
 
-#TODO: NEED BETTER SOLUTION FOR MEDIA FILES
+
 set(STARLIGHT_APP_BUILDER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern/StarlightAppBuilder/")
 set(PREP_MEDIA_CMD "${STARLIGHT_APP_BUILDER_DIR}/scripts/PrepareMedia.py")
-add_custom_target(
-	always_run_target ALL 
-	DEPENDS ${${PROJECT_NAME}_SOURCES}
-)
 
 set(FINAL_APPLICATION_DIR "")
 if (MSVC)
@@ -92,37 +86,30 @@ else()
 	set(FINAL_APPLICATION_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_custom_command(
-		TARGET
-			always_run_target
-		POST_BUILD
-		COMMAND 
-			${Python3_EXECUTABLE} ${PREP_MEDIA_CMD} --builddir=${FINAL_APPLICATION_DIR} --mediadir=${CMAKE_CURRENT_SOURCE_DIR}/media --depsdir=${STARLIGHT_APP_BUILDER_DIR}/deps --fastest
+	add_custom_target(prepare_media ALL
+		COMMAND ${Python3_EXECUTABLE} ${PREP_MEDIA_CMD} --builddir=${FINAL_APPLICATION_DIR} --mediadir=${CMAKE_CURRENT_SOURCE_DIR}/media --depsdir=${STARLIGHT_APP_BUILDER_DIR}/deps --fastest
+		DEPENDS ${ALL_FILES} ${STARLIGHT_APP_BUILDER_DIR}/scripts/PrepareMedia.py
+		COMMENT "Running media prep"
+		VERBATIM
 	)
 else()
-	add_custom_command(
-		TARGET
-			always_run_target
-		POST_BUILD
-		COMMAND 
-			${Python3_EXECUTABLE} ${PREP_MEDIA_CMD} --builddir=${FINAL_APPLICATION_DIR} --mediadir=${CMAKE_CURRENT_SOURCE_DIR}/media --depsdir=${STARLIGHT_APP_BUILDER_DIR}/deps
+	add_custom_target(prepare_media ALL
+		COMMAND ${Python3_EXECUTABLE} ${PREP_MEDIA_CMD} --builddir=${FINAL_APPLICATION_DIR} --mediadir=${CMAKE_CURRENT_SOURCE_DIR}/media --depsdir=${STARLIGHT_APP_BUILDER_DIR}/deps
+		DEPENDS ${ALL_FILES} ${STARLIGHT_APP_BUILDER_DIR}/scripts/PrepareMedia.py
+		COMMENT "Running media prep"
+		VERBATIM
 	)
 endif()
 
-set(FORMAT_STAMP "${CMAKE_BINARY_DIR}/format.stamp")
 set(ALL_FILES ${${PROJECT_NAME}_HEADERS} ${${PROJECT_NAME}_SOURCES})
 # Convert to space-separated string
 string(REPLACE ";" " " FILE_LIST "${ALL_FILES}")
 
-add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/format.stamp
+add_custom_target(format_files
     COMMAND ${Python3_EXECUTABLE} ${STARLIGHT_APP_BUILDER_DIR}/scripts/SourceCodeFormatter.py ${FILE_LIST} --dir ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/format.stamp
     DEPENDS ${ALL_FILES} ${STARLIGHT_APP_BUILDER_DIR}/scripts/SourceCodeFormatter.py
     COMMENT "Running clang-format"
-)
-
-add_custom_target(format_cpp_files
-    DEPENDS ${FORMAT_STAMP}
 )
