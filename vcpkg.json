@@ -10,6 +10,10 @@
         "boost-thread",
         "boost-lockfree",
         "boost-container",
-        "boost-filesystem"
+        "boost-filesystem",
+        {
+            "name": "ktx",
+            "features": ["vulkan"]
+        }
     ]
 }
