@@ -58,7 +58,8 @@ set(${PROJECT_NAME}_SOURCE
 	"src/loaders/LightLoaders.cpp" 
 	"src/loaders/CameraLoaders.cpp"
 	"src/loaders/SceneLoaders.cpp"
- "src/loaders/RenderLoaders.cpp")
+ 	"src/loaders/RenderLoaders.cpp"
+)
 set(${PROJECT_NAME}_HEADERS 
 	"include/Application.hpp"
 )
@@ -71,15 +72,32 @@ target_include_directories(${PROJECT_NAME}_lib
 	PUBLIC "include"
 )
 if (HEADLESS)
-	target_link_libraries(${PROJECT_NAME}_lib
-		PUBLIC
-			Starlight::starlight
-	)
+	if (WIN32)
+		target_link_libraries(${PROJECT_NAME}_lib
+			PUBLIC
+				Starlight::starlight
+		)
+	else()
+		target_link_libraries(${PROJECT_NAME}_lib
+			PUBLIC
+				Starlight::starlight
+				atomic
+		)
+	endif()
 else()
-	target_link_libraries(${PROJECT_NAME}_lib
-		PUBLIC
-			Starlight::windowing
-	)
+	if (WIN32)
+		target_link_libraries(${PROJECT_NAME}_lib
+			PUBLIC
+				Starlight::windowing
+		)
+	else()
+		target_link_libraries(${PROJECT_NAME}_lib
+			PUBLIC
+				Starlight::windowing
+				atomic
+		)
+	endif()
+
 endif()
 
 #main application executable
