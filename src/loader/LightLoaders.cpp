@@ -1,8 +1,8 @@
-#include "loaders/LightLoaders.hpp"
+#include "loader/LightLoaders.hpp"
 
 #include <starlight/command/CreateLight.hpp>
 
-namespace loaders
+namespace loader
 {
 std::shared_ptr<std::vector<star::Light>> LoadMainLight(star::core::device::DeviceContext &ctx)
 {

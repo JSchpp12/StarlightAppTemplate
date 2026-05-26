@@ -5,7 +5,9 @@
 
 #include <vector>
 
-namespace loaders
+namespace loader
 {
+
 std::vector<std::shared_ptr<star::StarObject>> LoadLionScene(star::core::device::DeviceContext &context);
+
 }

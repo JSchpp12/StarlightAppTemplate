@@ -1,11 +1,13 @@
-#include "loaders/CameraLoaders.hpp"
+#include "loader/CameraLoaders.hpp"
 
 #include <glm/fwd.hpp>
+
+#ifdef STAR_ENABLE_PRESENTATION
 #include <star_windowing/BasicCamera.hpp>
 #include <star_windowing/InteractivityBus.hpp>
 
-std::shared_ptr<star::StarCamera> loaders::LoadInteractiveCamera(star::core::device::DeviceContext &ctx,
-                                                                 star::windowing::WindowingContext *winContext)
+std::shared_ptr<star::StarCamera> loader::LoadInteractiveCamera(star::core::device::DeviceContext &ctx,
+                                                                star::windowing::WindowingContext *winContext)
 {
     star::windowing::InteractivityBus::Init(&ctx.getEventBus(), winContext);
 
@@ -21,16 +23,12 @@ std::shared_ptr<star::StarCamera> loaders::LoadInteractiveCamera(star::core::dev
 
     camera->init(ctx.getEventBus());
 
-    {
-        const auto position = glm::vec3{-2.0, 1.0f, -2.0f};
-        camera->setPosition(position);
-        camera->setForwardVector(glm::normalize(-position));
-    }
-
     return camera;
 }
 
-std::shared_ptr<star::StarCamera> loaders::LoadHeadlessCamera(star::core::device::DeviceContext &ctx)
+#endif
+
+std::shared_ptr<star::StarCamera> loader::LoadHeadlessCamera(star::core::device::DeviceContext &ctx)
 {
     return std::make_shared<star::StarCamera>(ctx.getEngineResolution().width, ctx.getEngineResolution().height, 90.0f,
                                               1.0f, 10.0f);

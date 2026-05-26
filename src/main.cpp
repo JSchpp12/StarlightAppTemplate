@@ -1,5 +1,7 @@
 #include "StarEngine.hpp"
 
+#include "interface/IRunMode.hpp"
+
 #include <star_common/helper/PathHelpers.hpp>
 #include <starlight/common/ConfigFile.hpp>
 
@@ -8,17 +10,21 @@
 #include <vk_mem_alloc.h>
 
 #ifdef STAR_ENABLE_PRESENTATION
-#include "WindowedMode.hpp"
-void runWindowed()
+
+#include "run_mode/Windowed.hpp"
+static WindowedMode setWindowed()
 {
-    WindowedMode window;
-    window.run();
+    return WindowedMode();
 }
+
 #else
-#include "WindowedMode.hpp"
-void runHeadless()
+
+#include "run_mode/Headless.hpp"
+static Headless setHeadless()
 {
+    return Headless();
 }
+
 #endif
 
 int main()
@@ -26,8 +32,10 @@ int main()
     star::ConfigFile::load(star::common::paths::GetRuntimePath().parent_path() / "StarEngine.cfg");
 
 #ifdef STAR_ENABLE_PRESENTATION
-    runWindowed();
+    auto mode = setWindowed();
 #else
-    runHeadless();
+    auto mode = setHeadless();
 #endif
+
+    static_cast<IRunMode &>(mode).run();
 }

@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace loaders
+namespace loader
 {
 
 std::shared_ptr<std::vector<star::Light>> LoadMainLight(star::core::device::DeviceContext &ctx);

@@ -53,12 +53,15 @@ if (NOT HEADLESS)
 endif()
 set(${PROJECT_NAME}_SOURCE 
  	"src/Application.cpp"
-	"src/WindowedMode.cpp"
-	  
-	"src/loaders/LightLoaders.cpp" 
-	"src/loaders/CameraLoaders.cpp"
-	"src/loaders/SceneLoaders.cpp"
- 	"src/loaders/RenderLoaders.cpp"
+	"src/InteractiveApplication.cpp"
+	"src/loader/LightLoaders.cpp" 
+	"src/loader/CameraLoaders.cpp"
+	"src/loader/SceneLoaders.cpp"
+		"src/loader/RenderLoaders.cpp"
+	"src/run_mode/Headless.cpp" 
+	"src/run_mode/Windowed.cpp" 
+	"src/renderer/headless/Orchestrator.cpp" 
+	"src/renderer/headless/GiveImageToTransfer.cpp"
 )
 set(${PROJECT_NAME}_HEADERS 
 	"include/Application.hpp"

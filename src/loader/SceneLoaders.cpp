@@ -1,4 +1,4 @@
-#include "loaders/SceneLoaders.hpp"
+#include "loader/SceneLoaders.hpp"
 
 #include <starlight/command/CreateObject.hpp>
 #include <starlight/command/detail/create_object/DirectObjCreation.hpp>
@@ -48,7 +48,7 @@ static std::shared_ptr<star::StarObject> LoadPlant(const star::core::device::Dev
     return cmd.getReply().get();
 }
 
-std::vector<std::shared_ptr<star::StarObject>> loaders::LoadLionScene(star::core::device::DeviceContext &ctx)
+std::vector<std::shared_ptr<star::StarObject>> loader::LoadLionScene(star::core::device::DeviceContext &ctx)
 {
     const std::filesystem::path mediaPath = std::filesystem::canonical(star::ConfigFile::getSetting(star::Config_Settings::mediadirectory));
     auto lion = LoadLion(ctx, mediaPath);
