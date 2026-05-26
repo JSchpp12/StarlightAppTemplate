@@ -1,29 +1,45 @@
-#pragma once 
+#pragma once
 
-#include "StarApplication.hpp"
+#include <starlight/common/entities/Light.hpp>
+#include <starlight/core/renderer/RendererBase.hpp>
+#include <starlight/core/renderer/TimelineSynchronizer.hpp>
+#include <starlight/templates/StarApplication.hpp>
 
-#include <GLFW/glfw3.h>
+#include <functional>
 
-#include <string> 
-
-class Application :
-    public star::StarApplication
+class Application : public star::StarApplication
 {
-public:
-    Application(star::StarScene& scene);
+  public:
+    using CameraLoader = std::function<std::shared_ptr<star::StarCamera>(star::core::device::DeviceContext &)>;
+    using LightLoader = std::function<std::shared_ptr<std::vector<star::Light>>(star::core::device::DeviceContext &)>;
+    using SceneLoader =
+        std::function<std::vector<std::shared_ptr<star::StarObject>>(star::core::device::DeviceContext &)>;
+    using MainRendererLoader = std::function<star::common::Renderer(
+        star::core::device::DeviceContext &, std::vector<std::shared_ptr<star::StarObject>>,
+        std::shared_ptr<std::vector<star::Light>>, std::shared_ptr<star::StarCamera>)>;
+    using MainRendererSyncLoader =
+        std::function<star::core::renderer::TimelineSynchronizer(star::core::device::DeviceContext &)>;
+    Application(CameraLoader cameraLoader, LightLoader lightLoader, SceneLoader sceneLoader,
+                MainRendererLoader rendererLoader, MainRendererSyncLoader rendererSyncLoader)
+        : m_mainRendererSync(0), m_cameraLoader(std::move(cameraLoader)), m_lightLoader(std::move(lightLoader)),
+          m_sceneLoader(std::move(sceneLoader)), m_rendererLoader(std::move(rendererLoader)),
+          m_rendererSyncLoader(std::move(rendererSyncLoader))
+    {
+    }
 
-    void Load();
+    virtual ~Application() = default;
 
-    virtual std::string getApplicationName() { return "Starlight Application"; }
+    std::shared_ptr<star::StarScene> loadScene(star::core::device::DeviceContext &context) override;
+    virtual void shutdown(star::core::device::DeviceContext &context) override;
+    virtual void init() override;
+    virtual void frameUpdate(star::core::SystemContext &context) override;
 
-    void onKeyPress(int key, int scancode, int mods) override;
-
-protected:
-
-private:
-    void onKeyRelease(int key, int scancode, int mods) override;
-    void onMouseMovement(double xpos, double ypos) override;
-    void onMouseButtonAction(int button, int action, int mods) override;
-    void onScroll(double xoffset, double yoffset) override;
-    void onWorldUpdate(const uint32_t& frameInFlightIndex) override;
+  private:
+    star::core::renderer::TimelineSynchronizer m_mainRendererSync;
+    CameraLoader m_cameraLoader;
+    LightLoader m_lightLoader;
+    SceneLoader m_sceneLoader;
+    MainRendererLoader m_rendererLoader;
+    MainRendererSyncLoader m_rendererSyncLoader;
+    star::core::renderer::RendererBase *m_mainRenderer{nullptr};
 };

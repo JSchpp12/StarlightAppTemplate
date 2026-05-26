@@ -1,71 +1,48 @@
 #include "Application.hpp"
 
-#include "ConfigFile.hpp"
-#include "Time.hpp"
-#include "Interactivity.hpp"
-#include "DebugHelpers.hpp"
-#include "LightManager.hpp"
-#include "KeyStates.hpp"
-#include "BasicObject.hpp"
+#include <starlight/command/command_order/TriggerPass.hpp>
+#include <starlight/virtual/StarScene.hpp>
 
-#include <memory> 
+using namespace star;
 
-using namespace star; 
-
-Application::Application(star::StarScene& scene) : StarApplication(scene){}
-
-void Application::Load()
+static void TriggerSubmissionOfMainDraw(const star::core::device::DeviceContext &ctx, const star::Handle &registration,
+                                        const star::Handle &timelineSemaphoreToUse)
 {
-    {
-        const auto position = glm::vec3{ -2.0, 1.0f, -2.0f };
-        this->scene.getCamera()->setPosition(position);
-        this->scene.getCamera()->setForwardVector(glm::normalize(-position));
-    }
+    const size_t ii = static_cast<size_t>(ctx.frameTracker().getCurrent().getFrameInFlightIndex());
+    const size_t signalValue = static_cast<size_t>(ctx.frameTracker().getCurrent().getNumTimesFrameProcessed()) + 1;
 
-    auto mediaDirectoryPath = star::ConfigFile::getSetting(star::Config_Settings::mediadirectory);
-    auto lionPath = star::ConfigFile::getSetting(star::Config_Settings::mediadirectory) + "models/lion-statue/source/rapid.obj";
-    auto materialsPath = mediaDirectoryPath + "models/lion-statue/source";
-    auto plantPath = star::ConfigFile::getSetting(star::Config_Settings::mediadirectory) + "models/aloevera/aloevera.obj";
-    
-    auto lion = BasicObject::New(lionPath);
-    auto plant = BasicObject::New(plantPath); 
-    auto& lion_i = lion->createInstance(); 
-    lion_i.setScale(glm::vec3{ 0.04f, 0.04f, 0.04f });
-    lion_i.setPosition(glm::vec3{ 0.0, 0.0, 0.0 });
-    lion_i.rotateGlobal(star::Type::Axis::x, -90);
-    lion_i.moveRelative(glm::vec3{ 0.0, -1.0, 0.0 });
-
-    auto& p_i = plant->createInstance(); 
-    p_i.setPosition(glm::vec3{ -0.8, 0.0, 0.0 }); 
-
-    this->scene.add(std::move(lion)); 
-    this->scene.add(std::move(plant));
-
-    this->scene.add(std::make_unique<star::Light>(star::Type::Light::directional, glm::vec3{10, 10, 10}));
-    
+    ctx.getCmdBus().submit(star::command_order::TriggerPass()
+                               .setPass(registration)
+                               .setTimelineSemaphore(timelineSemaphoreToUse)
+                               .setSignalValue(signalValue));
 }
 
+std::shared_ptr<star::StarScene> Application::loadScene(star::core::device::DeviceContext &context)
+{
+    auto camera = m_cameraLoader(context);
+    auto objects = m_sceneLoader(context);
+    auto lights = m_lightLoader(context);
+    auto renderer = m_rendererLoader(context, objects, lights, camera);
+    m_mainRenderer = renderer.getRawBase(); 
+    m_mainRendererSync = m_rendererSyncLoader(context);
+    m_mainRendererSync.prepRender(context);
 
-void Application::onKeyPress(int key, int scancode, int mods)
+    return std::make_shared<star::StarScene>(star::star_scene::makeAlwaysReadyPolicy(), std::move(camera),
+                                             std::move(renderer));
+}
+
+void Application::shutdown(star::core::device::DeviceContext &context)
 {
 }
 
-void Application::onKeyRelease(int key, int scancode, int mods)
+void Application::init()
 {
 }
 
-void Application::onMouseMovement(double xpos, double ypos)
+void Application::frameUpdate(star::core::SystemContext &context)
 {
-}
-
-void Application::onMouseButtonAction(int button, int action, int mods)
-{
-}
-
-void Application::onScroll(double xoffset, double yoffset)
-{
-}
-
-void Application::onWorldUpdate(const uint32_t& frameInFlightIndex)
-{
+    const auto &d = context.getAllDevices().getData()[0];
+    TriggerSubmissionOfMainDraw(
+        d, m_mainRenderer->getCommandBuffer(),
+        m_mainRendererSync.getSemaphores()[d.frameTracker().getCurrent().getFinalTargetImageIndex()]);
 }

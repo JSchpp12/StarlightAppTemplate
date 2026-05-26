@@ -1,19 +1,29 @@
 {
     "dependencies": [
+        "abseil",
         "nlohmann-json",
         "stb",
+        "blosc",
         "glm",
-        "glfw3",
         "vulkan-memory-allocator",
-        "glslang",
-        "tinyobjloader",
-        "boost-thread",
-        "boost-lockfree",
-        "boost-container",
-        "boost-filesystem",
+        "basisu", 
+        "tinyobjloader", 
+        "boost-thread", 
+        "boost-lockfree", 
+        "boost-container", 
+        "boost-filesystem", 
+        "boost-log",
         {
             "name": "ktx",
             "features": ["vulkan"]
         }
-    ]
+    ],
+    "features": {
+        "windowed": {
+            "description": "Enables installation of dependencies for windowing support",
+            "dependencies": [
+                "glfw3"
+            ]
+        }
+    }
 }

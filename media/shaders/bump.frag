@@ -29,33 +29,38 @@ struct Light_Type{
 	uint spot;
 };
 
-struct Light{
-	vec4 position;
-	vec4 direction;
+struct Light
+{
+    vec4 position;
+    vec4 direction;
 
-	//properties
-	vec4 ambient; 
-	vec4 diffuse;
-	vec4 specular; 
-	//controls.x = inner cutoff angle 
-	//controls.y = outer cutoff angle
-	vec4 controls; 
-	//settings.x = enabled
-	//settings.y = type
-	uvec4 settings; 
+    // properties
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+    // controls.x = inner cutoff angle
+    // controls.y = outer cutoff angle
+    vec4 controls;
+    // settings.x = enabled
+    // settings.y = type
+    uvec4 settings;
+    uint luminance;
 };
 
 layout(binding = 0, set = 0) uniform GlobalUniformBufferObject {
 	mat4 proj;
 	mat4 view;  
 	mat4 inverseView; 
-	uint numLights; 
 	uint renderSettings;
 } globalUbo; 
 
-layout(binding = 1, set = 0) readonly buffer globalLightBuffer{
-    Light lights[];
-};
+layout(binding = 1, set = 0) uniform SceneLightInfo{
+	uint numLights; 
+} sceneLightInfo; 
+
+layout(binding = 2, set = 0) readonly buffer globalLightBuffer{
+	Light lights[];
+ };
 
 layout(binding = 0, set = 2) uniform sampler2D textureSampler; 
 layout(binding = 1, set = 2) uniform sampler2D normalMapSampler; 
@@ -111,7 +116,7 @@ void main() {
 
     bool isTest = false; 
 
-    for (int i = 0; i < globalUbo.numLights; i++){
+    for (int i = 0; i < sceneLightInfo.numLights; i++){
         //check if the current light object is a spotlight
         isSpot = ((lights[i].settings.y & lightChecker.spot) != 0);
         isDirectional = ((lights[i].settings.y & lightChecker.directional) != 0);
@@ -179,9 +184,6 @@ void main() {
     diffuseLight *= inFragMatDiffuse; 
     specularLight *= inFragMatSpecular; 
 
-    vec3 totalSurfaceColor = (ambientLight + diffuseLight + specularLight) * vec3(texture(textureSampler, inFragTextureCoordinate)); 
-
+    const vec3 totalSurfaceColor = (ambientLight + diffuseLight + specularLight) * vec3(texture(textureSampler, inFragTextureCoordinate)); 
     outColor = vec4(totalSurfaceColor, 1.0);
-
-
 }
