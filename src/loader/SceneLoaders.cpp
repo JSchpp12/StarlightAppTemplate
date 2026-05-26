@@ -14,7 +14,6 @@ static std::shared_ptr<star::StarObject> LoadLion(const star::core::device::Devi
                                                   const std::filesystem::path &mediaPath)
 {
     const auto path = mediaPath / "models" / "lion-statue" / "source" / "rapid.obj";
-    //const auto materialPath = mediaPath / "models" / "lion-status" / "textures"; 
 
     auto cmd = star::command::CreateObject::Builder()
                    .setLoader(std::make_unique<star::command::create_object::DirectObjCreation>(
@@ -50,7 +49,8 @@ static std::shared_ptr<star::StarObject> LoadPlant(const star::core::device::Dev
 
 std::vector<std::shared_ptr<star::StarObject>> loader::LoadLionScene(star::core::device::DeviceContext &ctx)
 {
-    const std::filesystem::path mediaPath = std::filesystem::canonical(star::ConfigFile::getSetting(star::Config_Settings::mediadirectory));
+    const std::filesystem::path mediaPath =
+        std::filesystem::canonical(star::ConfigFile::getSetting(star::Config_Settings::mediadirectory));
     auto lion = LoadLion(ctx, mediaPath);
     lion->init(ctx);
 

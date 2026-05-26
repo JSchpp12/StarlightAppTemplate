@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.26)
 project(starlight_app_template
 	DESCRIPTION "Template application using starlight"
 	LANGUAGES C CXX
-	VERSION 1.0.0
+	VERSION 1.0.1
 )
 option(HEADLESS "Build without presentation support" OFF)
 option(STAR_ENABLE_UBSAN "Enable UBSan" OFF)

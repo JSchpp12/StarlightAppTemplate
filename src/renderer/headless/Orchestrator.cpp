@@ -28,6 +28,7 @@ void Orchestrator::recordCommands(vk::CommandBuffer &commandBuffer, const star::
 {
     this->star::core::renderer::DefaultRenderer::recordCommands(commandBuffer, frameTracker, frameIndex);
 
+    //todo: Eventually use to do queue ownership transfers
     //GiveImageToTransfer transfer{
     //    .image = this->m_renderingContext.recordDependentImage
     //                 .get(this->m_renderToImages[frameTracker.getCurrent().getFinalTargetImageIndex()])
