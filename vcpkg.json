@@ -1,28 +1,52 @@
 {
+    "name": "starlight-app-template",
+    "version-string": "1.0.0",
     "dependencies": [
+        "tbb",
         "abseil",
+        "highway",
         "nlohmann-json",
         "stb",
-        "blosc",
         "glm",
         "vulkan-memory-allocator",
-        "basisu", 
-        "tinyobjloader", 
-        "boost-thread", 
-        "boost-lockfree", 
-        "boost-container", 
-        "boost-filesystem", 
+        "basisu",
+        "tinyobjloader",
+        "boost-thread",
+        "boost-lockfree",
+        "boost-container",
+        "boost-filesystem",
         "boost-log",
         {
             "name": "ktx",
-            "features": ["vulkan"]
-        }
+            "features": [
+                "vulkan"
+            ]
+        },
+        {
+            "name": "gdal",
+            "default-features": false
+        },
+        {
+            "name": "tiff",
+            "features": [
+                "zstd"
+            ]
+        },
+        "gtest"
     ],
     "features": {
         "windowed": {
             "description": "Enables installation of dependencies for windowing support",
             "dependencies": [
-                "glfw3"
+                "glfw3",
+                {
+                    "name": "imgui",
+                    "default-features": false,
+                    "features": [
+                        "glfw-binding",
+                        "vulkan-binding"
+                    ]
+                }
             ]
         }
     }
