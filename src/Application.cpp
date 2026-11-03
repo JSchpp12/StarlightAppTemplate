@@ -1,48 +1,53 @@
 #include "Application.hpp"
 
-#include <starlight/command/command_order/TriggerPass.hpp>
+#include <starlight/command/CreateLight.hpp>
+#include <starlight/command/SaveSceneState.hpp>
+#include <starlight/core/logging/LoggingFactory.hpp>
 #include <starlight/virtual/StarScene.hpp>
 
-using namespace star;
-
-static void TriggerSubmissionOfMainDraw(const star::core::device::DeviceContext &ctx, const star::Handle &registration,
-                                        const star::Handle &timelineSemaphoreToUse)
-{
-    const size_t ii = static_cast<size_t>(ctx.frameTracker().getCurrent().getFrameInFlightIndex());
-    const size_t signalValue = static_cast<size_t>(ctx.frameTracker().getCurrent().getNumTimesFrameProcessed()) + 1;
-
-    ctx.getCmdBus().submit(star::command_order::TriggerPass()
-                               .setPass(registration)
-                               .setTimelineSemaphore(timelineSemaphoreToUse)
-                               .setSignalValue(signalValue));
-}
+#include <sstream>
 
 std::shared_ptr<star::StarScene> Application::loadScene(star::core::device::DeviceContext &context)
 {
-    auto camera = m_cameraLoader(context);
-    auto objects = m_sceneLoader(context);
-    auto lights = m_lightLoader(context);
-    auto renderer = m_rendererLoader(context, objects, lights, camera);
-    m_mainRenderer = renderer.getRawBase(); 
-    m_mainRendererSync = m_rendererSyncLoader(context);
-    m_mainRendererSync.prepRender(context);
+    initListeners(context);
 
-    return std::make_shared<star::StarScene>(star::star_scene::makeAlwaysReadyPolicy(), std::move(camera),
-                                             std::move(renderer));
+    auto camera = createMainCamera(context);
+
+    {
+        // Named lvalue: the rvalue overload is rejected for reply-carrying commands.
+        star::command::CreateLight lCmd = star::command::CreateLight().setName("main");
+        context.getCmdBus().submit(lCmd);
+        auto [addResult, light] = lCmd.getReply().get();
+        m_mainLight = light;
+        if (addResult == star::command::create_light::fail)
+        {
+            star::core::logging::warning("Light command reported failure; installing fallback 'main' light");
+            m_mainLight->emplace_back(star::Light()
+                                          .setPosition({0.0, 4.0, 0.0})
+                                          .setType(star::Type::Light::directional)
+                                          .setAmbient({1.0f, 1.0f, 1.0f})
+                                          .setLuminance(20)
+                                          .setDirection({0.0f, -1.0f, 0.0f}));
+        }
+    }
+
+    auto objects = m_sceneLoader(context);
+
+    auto provider = createMainRenderer(context, objects, camera);
+
+    // The same objects vector feeds both the readiness policy and the provider
+    // (shared_ptrs, so both observe the same objects).
+    m_mainScene = std::make_shared<star::StarScene>(star::star_scene::makeWaitForAllObjectsReadyPolicy(objects),
+                                                    std::move(camera));
+
+    m_mainScene->addProvider(std::move(provider));
+
+    return m_mainScene;
 }
 
 void Application::shutdown(star::core::device::DeviceContext &context)
 {
-}
-
-void Application::init()
-{
-}
-
-void Application::frameUpdate(star::core::SystemContext &context)
-{
-    const auto &d = context.getAllDevices().getData()[0];
-    TriggerSubmissionOfMainDraw(
-        d, m_mainRenderer->getCommandBuffer(),
-        m_mainRendererSync.getSemaphores()[d.frameTracker().getCurrent().getFinalTargetImageIndex()]);
+    // Exercises the SceneLoaderService; a missing scene file on disk only warns.
+    auto cmd = star::command::SaveSceneState();
+    context.begin().set(cmd).submit();
 }

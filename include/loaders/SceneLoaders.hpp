@@ -1,8 +1,9 @@
 #pragma once
 
 #include <starlight/core/device/DeviceContext.hpp>
-#include <starlight/virtual/StarObject.hpp>
+#include <starlight/object/StarObject.hpp>
 
+#include <memory>
 #include <vector>
 
 namespace loaders

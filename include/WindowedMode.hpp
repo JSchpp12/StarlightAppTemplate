@@ -5,7 +5,7 @@
 class WindowedMode
 {
   public:
-    void run();
+    int run();
 };
 
 #endif
